@@ -29,6 +29,32 @@ class perpetualTimer():
    def cancel(self):
       self.thread.cancel()
 
+class spritesheet(object):
+    def __init__(self, filename):
+        self.sheet = pygame.image.load(filename).convert()
+        
+    # Load a specific image from a specific rectangle
+    def image_at(self, rectangle, colorkey = None):
+        "Loads image from x,y,x+offset,y+offset"
+        rect = pygame.Rect(rectangle)
+        image = pygame.Surface(rect.size).convert()
+        image.blit(self.sheet, (0, 0), rect)
+        if colorkey is not None:
+            if colorkey is -1:
+                colorkey = image.get_at((0,0))
+            image.set_colorkey(colorkey, pygame.RLEACCEL)
+        return image
+    # Load a whole bunch of images and return them as a list
+    def images_at(self, rects, colorkey = None):
+        "Loads multiple images, supply a list of coordinates" 
+        return [self.image_at(rect, colorkey) for rect in rects]
+    # Load a whole strip of images
+    def load_strip(self, rect, image_count, colorkey = None):
+        "Loads a strip of images and returns them as a list"
+        tups = [(rect[0]+rect[2]*x, rect[1], rect[2], rect[3])
+                for x in range(image_count)]
+        return self.images_at(tups, colorkey)
+
 #Like the class above, but will only call the callback function one time before the thread dies.
 class DelayedFunctionCall():
 
@@ -68,171 +94,4 @@ class MyClickableImageButton:
                 self.theCallback()
             if not pygame.mouse.get_pressed()[0]:
                 self.clicked=False
-                self.parentSurface.blit(self.img, (self.rect.x, self.rect.y))
-
-class Piece(pygame.sprite.Sprite): 
-    def __init__(self, newImage, newParentSurface, newPlayerNum,newBeingDragged): 
-        super().__init__() 
-
-        self._image = newImage
-        self._parentSurface = newParentSurface
-        self._playerNum = newPlayerNum
-        self._beingDragged = newBeingDragged
-        self._pickedUpFromLocation = None
-
-    def DrawSelf(self,somePos):
-        self._parentSurface.blit(self._image, somePos)
-
-    def SetPickedUpFromLocation(self,somePos):
-        self._pickedUpFromLocation = somePos
-
-    def GetPickedUpFromLocation(self):
-        return self._pickedUpFromLocation
-
-    def SetDragged(self, newDragStatus):
-        self._beingDragged = newDragStatus
-
-    def GetDragged(self):
-        return self._beingDragged
-
-    def GetPlayerNum(self):
-        return self._playerNum
-    
-    def SetImage(self, newImage):
-        self._image = newImage
-
-    def GetImage(self):
-        return self._image
-
-#A Generic game grid class - It deals with the dreaded "rows" and "cols" V (x,y) situation for easy coding!
-class MyGameGrid():
-    
-    def __init__(self,newRows,newCols,newCellSizeX,newCellSizeY,newTopLeftPos,newPieceOffsetX,newPieceOffsetY,newGridLinesCol):
-        self._rows = newRows
-        self._cols = newCols
-        self._cellSizeX = newCellSizeX
-        self._cellSizeY = newCellSizeY
-        self._topLeftPos = newTopLeftPos
-        self._pieceOffsetX = newPieceOffsetX
-        self._pieceOffsetY = newPieceOffsetY
-        self._gridLinesCol = newGridLinesCol
-        self._pieceBeingDragged = None
-        self._theGrid = list()
-        self.BlankTheGrid()
-
-    def SetDraggedPiece(self,somePiece):
-        self._pieceBeingDragged = somePiece
-
-    def GetDraggedPiece(self):
-        return self._pieceBeingDragged
-        
-    def BlankTheGrid(self):
-        #Make the whole grid "blank"
-        self._theGrid = list()
-        for i in range(self._rows):
-            newRow = []
-            for j in range(self._cols):
-                newRow.append(None)
-        
-            self._theGrid.append(newRow)
-
-    def OutsideGrid(self,theCoord):
-
-        x = theCoord[0]
-        y = theCoord[1]
-
-        if(x >= self._cols or y >= self._rows or x < 0 or y < 0):
-
-            return True
-        else:
-            return False
-        
-    def GetGridItem(self,theCoord):
-        #The x and y are coords starting at zero of a position on the game grid that we want
-        #
-        #  -------------------------
-        #  | 0,0 | 1,0 | 2,0 | 3,0 |
-        #  -------------------------
-        #  | 0,1 | 1,1 | 2,1 | 3,1 |
-        #  -------------------------
-        #  | 0,2 | 1,2 | 2,2 | 3,2 |
-        #  -------------------------
-        #
-        #  etc.
-
-        #The problem is that the game grid is stored in a list of lists(rows), so:
-        #
-        # x is col!
-        # y is the row!
-        #
-        # We need to access items using theGrid[y][x]
-
-        if(self.OutsideGrid(theCoord)):
-            return None
-        else:
-            x = theCoord[0]
-            y = theCoord[1]
-            return self._theGrid[y][x]
-
-    def SetGridItem(self,theCoord,newItem):
-        x = theCoord[0]
-        y = theCoord[1]
-        self._theGrid[y][x] = newItem 
-
-    def DrawSelf(self,currentMousePos):
-
-        rowNum = 0
-        for row in self._theGrid:
-            colNum = 0
-            for somePiece in row:
-                if(somePiece != None):
-                    thePos = (self._topLeftPos[0] + colNum*self._cellSizeX + self._pieceOffsetX,
-                              self._topLeftPos[1] + rowNum*self._cellSizeY + self._pieceOffsetY)
-                    somePiece.DrawSelf(thePos)
-                colNum = colNum + 1
-            rowNum = rowNum + 1
-
-        #If there is a dragged piece then draw it at the current mouse pos
-        if(self._pieceBeingDragged != None):
-            posToDraw = (currentMousePos[0]-5*self._pieceOffsetX,currentMousePos[1]-3*self._pieceOffsetY)
-            self._pieceBeingDragged.DrawSelf(posToDraw)
-
-    def DebugPrintSelf(self):
-        for row in self._theGrid:
-            for somePiece in row:
-                if(somePiece == None):
-                    print(0,end=" ")
-                else:
-                    print(somePiece.GetPlayerNum(),end=" ")
-            print("")
-        
-        if(self._pieceBeingDragged != None):
-            print("Dragged piece : ",self._pieceBeingDragged.GetPlayerNum())
-        else:
-            print("Dragged piece : ", "None")
-    
-    def DrawGridLines(self,someSurface): 
-        LINE_WIDTH = 3
-        for i in range(self._cols + 1):
-            pygame.draw.line(someSurface,self._gridLinesCol,(self._topLeftPos[0]+i*self._cellSizeX, self._topLeftPos[1]),
-                                                            (self._topLeftPos[0]+i*self._cellSizeX, self._topLeftPos[1] + (self._rows)*self._cellSizeY),LINE_WIDTH)
-        for i in range(self._rows + 1):
-            pygame.draw.line(someSurface,self._gridLinesCol,(self._topLeftPos[0], self._topLeftPos[1]+i*self._cellSizeY),
-                                                            (self._topLeftPos[0]+(self._cols)*self._cellSizeX, self._topLeftPos[1]+i*self._cellSizeY),LINE_WIDTH)
-
-    def WhatSquareAreWeIn(self,someMousePosition):
-        #Find out what square somebody clicked on.
-        #For example, if we click top left the the answer is row 0 col 0
-        currentClickX = someMousePosition[0]
-        currentClickY = someMousePosition[1]
-    
-        adjustedX = currentClickX-self._topLeftPos[0]
-        col = adjustedX//(self._cellSizeX)
-        #col = adjustedX//(self._cellSizeX+1) #The +1 in the brackets seems to fix the identifcation of col 6 to 7 which was a bit out?
-    
-        adjustedY = currentClickY-self._topLeftPos[1]
-        row = adjustedY//(self._cellSizeY)
-    
-        return col,row
-                    
-            
+                self.parentSurface.blit(self.img, (self.rect.x, self.rect.y))        
