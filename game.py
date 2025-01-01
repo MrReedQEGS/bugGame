@@ -114,6 +114,11 @@ def HandleInput(running):
                     print("right pressed")
                 if event.key == pygame.K_LEFT:
                     print("left pressed")
+                if event.key == pygame.K_ESCAPE:
+                        gameState = MAIN_MENU
+                        pygame.mixer.music.stop()
+                        pygame.mixer.music.load("./sounds/02 - This Land.mp3") 
+                        pygame.mixer.music.play(-1,0.0)
                 
            
     return running
