@@ -48,6 +48,7 @@ backImageName = "./images/mainBackground.jpg"
 bugTossbackImageName = "./images/bugTossBackground.jpg"
 alphabetImageName = "./images/Letters.png"
 menuThingImageName = "./images/menuThing.png"
+pumbaIdleImageName = "./images/pumbaIdle.png"
 
 #sounds
 pygame.mixer.init()
@@ -70,8 +71,17 @@ menuThingYVal = MENU_Y_POS_1
 menuThingDirection = 1
 MENU_MAX_AMPLITUDE = 6
 
-DELAY1 = 0.05
+DELAY1 = 0.1
 myTimer1 = None
+
+PUMBA_TIMER_DELAY = 0.15
+pumbaTimer = None
+
+pumba_X = 200
+PUMBA_Y = 305
+pumbaSpeed = 0.1
+pumbaFrame = 0
+pumbaAminationDirection = 1
 
 #fonts
 pygame.font.init() # you have to call this at the start, 
@@ -109,10 +119,21 @@ def Timer1Callback():
         if(menuThingYVal <= startingPos - MENU_MAX_AMPLITUDE):
             menuThingDirection = 1
 
+def PumbaTimerCallback():
+    global pumbaFrame,pumbaAminationDirection
+    if(pumbaAminationDirection == 1):
+        pumbaFrame = pumbaFrame + 1
+        if(pumbaFrame == 3):
+            pumbaAminationDirection = -1
+    else:
+        pumbaFrame = pumbaFrame - 1
+        if(pumbaFrame == 0):
+            pumbaAminationDirection = 1
+
 
 def LoadImages():
     global backImage,theImage,bugTossBackImage,alphabet
-    global menuThingImage
+    global menuThingImage,pumbaIdle
 
     backImage = pygame.image.load(backImageName).convert()
     backImage = pygame.transform.scale(backImage, (600, 400))
@@ -121,23 +142,28 @@ def LoadImages():
     theImage = backImage
 
     alphabetSS = spritesheet(alphabetImageName)
-
     alphabet = []
     for j in range(4):
         for i in range(7):
             image = alphabetSS.image_at((4+i*120,4+j*100, 110, 85),colorkey=COL_WHITE)
             image = pygame.transform.scale(image, (55, 45))
             alphabet.append(image)
+
+    pumbaIdleSS = spritesheet(pumbaIdleImageName)
+    pumbaIdle = []
+    for i in range(4):
+            image = pumbaIdleSS.image_at((i*45,0,45,45),colorkey=COL_WHITE)
+            image = pygame.transform.scale(image, (90, 90))
+            pumbaIdle.append(image)
     
     menuThingImage = pygame.image.load(menuThingImageName).convert()
     menuThingImage = pygame.transform.scale(menuThingImage, (30, 30))  #change size first before doing alpha things
     menuThingImage.set_colorkey((0,0,0))
     menuThingImage.convert_alpha()
     
-
 def HandleInput(running):
 
-    global theImage,gameState,menuPos,menuThingYVal
+    global theImage,gameState,menuPos,menuThingYVal,pumba_X
 
     if(gameState == MAIN_MENU):
 
@@ -149,11 +175,12 @@ def HandleInput(running):
             if event.type == pygame.KEYDOWN:
                 
                 if event.key == pygame.K_RETURN and menuPos == 1:
+
                         gameState = TOSSING_BUGS
                         pygame.mixer.music.stop()
                         pygame.mixer.music.load("./sounds/15 - Bonus Stage 2.mp3")
                         pygame.mixer.music.play(-1,0.0) 
-                
+            
                 if event.key == pygame.K_RETURN and menuPos == 2 or event.key == pygame.K_ESCAPE:
                     #Time to quit!
                     return False
@@ -169,23 +196,25 @@ def HandleInput(running):
                         
     elif(gameState == TOSSING_BUGS):
 
+        keys = pygame.key.get_pressed()  # Checking pressed keys
+        if keys[pygame.K_RIGHT]:
+            pumba_X = pumba_X + pumbaSpeed
+        if keys[pygame.K_LEFT]:
+            pumba_X = pumba_X - pumbaSpeed
+
         for event in pygame.event.get():
 
             if event.type == pygame.QUIT:
                 running = False
 
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RIGHT:
-                    print("right pressed")
-                if event.key == pygame.K_LEFT:
-                    print("left pressed")
+           
                 if event.key == pygame.K_ESCAPE:
                         gameState = MAIN_MENU
                         pygame.mixer.music.stop()
                         pygame.mixer.music.load("./sounds/02 - This Land.mp3") 
                         pygame.mixer.music.play(-1,0.0)
                 
-           
     return running
 
 def DrawMainMenu():
@@ -208,6 +237,11 @@ def DrawMainMenu():
 def DrawGame():
     surface.blit(bugTossBackImage, (0, 0))
 
+    #DrawPumba
+    surface.blit(pumbaIdle[pumbaFrame], (pumba_X, PUMBA_Y))
+    
+    
+
 ##############################################################################
 # MAIN
 ##############################################################################
@@ -218,6 +252,10 @@ LoadImages()
 if(myTimer1 == None):
     myTimer1 = perpetualTimer(DELAY1,Timer1Callback)
     myTimer1.start()
+
+if(pumbaTimer == None):
+    pumbaTimer = perpetualTimer(PUMBA_TIMER_DELAY,PumbaTimerCallback)
+    pumbaTimer.start()
 
 #game loop
 while running:
