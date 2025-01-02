@@ -49,6 +49,7 @@ bugTossbackImageName = "./images/bugTossBackground.jpg"
 alphabetImageName = "./images/Letters.png"
 menuThingImageName = "./images/menuThing.png"
 pumbaIdleImageName = "./images/pumbaIdle.png"
+pumbaEatingImageName = "./images/pumbaEating.png"
 
 #sounds
 pygame.mixer.init()
@@ -71,7 +72,7 @@ menuThingYVal = MENU_Y_POS_1
 menuThingDirection = 1
 MENU_MAX_AMPLITUDE = 6
 
-DELAY1 = 0.1
+DELAY1 = 0.07
 myTimer1 = None
 
 PUMBA_TIMER_DELAY = 0.15
@@ -80,8 +81,12 @@ pumbaTimer = None
 pumba_X = 200
 PUMBA_Y = 305
 pumbaSpeed = 0.1
-pumbaFrame = 0
-pumbaAminationDirection = 1
+pumbaIdleFrame = 0
+pumbaIdleAminationDirection = 1
+PUMBA_IDLE = 1
+PUMBA_EATING = 2
+pumbaState = PUMBA_IDLE
+pumbaEatingFrame = 0
 
 #fonts
 pygame.font.init() # you have to call this at the start, 
@@ -120,20 +125,30 @@ def Timer1Callback():
             menuThingDirection = 1
 
 def PumbaTimerCallback():
-    global pumbaFrame,pumbaAminationDirection
-    if(pumbaAminationDirection == 1):
-        pumbaFrame = pumbaFrame + 1
-        if(pumbaFrame == 3):
-            pumbaAminationDirection = -1
-    else:
-        pumbaFrame = pumbaFrame - 1
-        if(pumbaFrame == 0):
-            pumbaAminationDirection = 1
 
+    global pumbaIdleFrame,pumbaIdleAminationDirection,pumbaEatingFrame,pumbaState
+
+    if(pumbaState == PUMBA_IDLE):
+        
+        if(pumbaIdleAminationDirection == 1):
+            pumbaIdleFrame = pumbaIdleFrame + 1
+            if(pumbaIdleFrame == 3):
+                pumbaIdleAminationDirection = -1
+        else:
+            pumbaIdleFrame = pumbaIdleFrame - 1
+            if(pumbaIdleFrame == 0):
+                pumbaIdleAminationDirection = 1
+     
+    elif(pumbaState == PUMBA_EATING):
+        pumbaEatingFrame = pumbaEatingFrame + 1
+        if(pumbaEatingFrame > 3):
+            pumbaState = PUMBA_IDLE
+            pumbaIdleAminationDirection = 1
+            pumbaIdleFrame = 0
 
 def LoadImages():
     global backImage,theImage,bugTossBackImage,alphabet
-    global menuThingImage,pumbaIdle
+    global menuThingImage,pumbaIdle,pumbaEating
 
     backImage = pygame.image.load(backImageName).convert()
     backImage = pygame.transform.scale(backImage, (600, 400))
@@ -155,6 +170,13 @@ def LoadImages():
             image = pumbaIdleSS.image_at((i*45,0,45,45),colorkey=COL_WHITE)
             image = pygame.transform.scale(image, (90, 90))
             pumbaIdle.append(image)
+
+    pumbaEatingSS = spritesheet(pumbaEatingImageName)
+    pumbaEating = []
+    for i in range(4):
+            image = pumbaEatingSS.image_at((i*45,0,45,45),colorkey=COL_WHITE)
+            image = pygame.transform.scale(image, (90, 90))
+            pumbaEating.append(image)
     
     menuThingImage = pygame.image.load(menuThingImageName).convert()
     menuThingImage = pygame.transform.scale(menuThingImage, (30, 30))  #change size first before doing alpha things
@@ -163,7 +185,7 @@ def LoadImages():
     
 def HandleInput(running):
 
-    global theImage,gameState,menuPos,menuThingYVal,pumba_X
+    global theImage,gameState,menuPos,menuThingYVal,pumba_X,pumbaEatingFrame,pumbaState
 
     if(gameState == MAIN_MENU):
 
@@ -199,8 +221,13 @@ def HandleInput(running):
         keys = pygame.key.get_pressed()  # Checking pressed keys
         if keys[pygame.K_RIGHT]:
             pumba_X = pumba_X + pumbaSpeed
+            if(pumba_X > SCREEN_WIDTH - 90):
+                pumba_X = SCREEN_WIDTH - 90
+
         if keys[pygame.K_LEFT]:
             pumba_X = pumba_X - pumbaSpeed
+            if(pumba_X < 0):
+                pumba_X = 0
 
         for event in pygame.event.get():
 
@@ -214,6 +241,10 @@ def HandleInput(running):
                         pygame.mixer.music.stop()
                         pygame.mixer.music.load("./sounds/02 - This Land.mp3") 
                         pygame.mixer.music.play(-1,0.0)
+                if(event.key == pygame.K_SPACE):
+                    pumbaState = PUMBA_EATING
+                    pumbaEatingFrame = 0
+       
                 
     return running
 
@@ -238,7 +269,10 @@ def DrawGame():
     surface.blit(bugTossBackImage, (0, 0))
 
     #DrawPumba
-    surface.blit(pumbaIdle[pumbaFrame], (pumba_X, PUMBA_Y))
+    if(pumbaState == PUMBA_IDLE):
+        surface.blit(pumbaIdle[pumbaIdleFrame], (pumba_X, PUMBA_Y))
+    elif(pumbaState == PUMBA_EATING):
+        surface.blit(pumbaEating[pumbaEatingFrame], (pumba_X, PUMBA_Y))
     
     
 
