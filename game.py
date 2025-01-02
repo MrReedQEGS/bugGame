@@ -82,7 +82,7 @@ pumbaTimer = None
 pumba_X = 200
 PUMBA_Y = 305
 pumbaSpeed = 0.1
-pumbaIdleFrame = 0
+pumbaIdleFrame = 1
 pumbaIdleAminationDirection = 1
 PUMBA_IDLE = 1
 PUMBA_EATING = 2
@@ -130,6 +130,9 @@ def PumbaTimerCallback():
     global pumbaIdleFrame,pumbaIdleAminationDirection,pumbaEatingFrame,pumbaState
 
     if(pumbaState == PUMBA_IDLE):
+
+        #idle animation frame 0 is sitting down so i am not using it.
+        #I am going frame 1,2,3,2,1 forever...
         
         if(pumbaIdleAminationDirection == 1):
             pumbaIdleFrame = pumbaIdleFrame + 1
@@ -137,15 +140,16 @@ def PumbaTimerCallback():
                 pumbaIdleAminationDirection = -1
         else:
             pumbaIdleFrame = pumbaIdleFrame - 1
-            if(pumbaIdleFrame == 0):
+            if(pumbaIdleFrame == 1):
                 pumbaIdleAminationDirection = 1
      
     elif(pumbaState == PUMBA_EATING):
+        #Should play the eating animation once!
         pumbaEatingFrame = pumbaEatingFrame + 1
         if(pumbaEatingFrame > 3):
             pumbaState = PUMBA_IDLE
             pumbaIdleAminationDirection = 1
-            pumbaIdleFrame = 0
+            pumbaIdleFrame = 1
 
 def LoadImages():
     global backImage,theImage,bugTossBackImage,alphabet
