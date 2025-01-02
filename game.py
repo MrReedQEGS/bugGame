@@ -50,6 +50,7 @@ alphabetImageName = "./images/Letters.png"
 menuThingImageName = "./images/menuThing.png"
 pumbaIdleImageName = "./images/pumbaIdle.png"
 pumbaEatingImageName = "./images/pumbaEating.png"
+lionKingTitleImageName = "./images/LionKingLogo.png"
 
 #sounds
 pygame.mixer.init()
@@ -148,7 +149,7 @@ def PumbaTimerCallback():
 
 def LoadImages():
     global backImage,theImage,bugTossBackImage,alphabet
-    global menuThingImage,pumbaIdle,pumbaEating
+    global menuThingImage,pumbaIdle,pumbaEating,lionKingTitleImage
 
     backImage = pygame.image.load(backImageName).convert()
     backImage = pygame.transform.scale(backImage, (600, 400))
@@ -182,6 +183,13 @@ def LoadImages():
     menuThingImage = pygame.transform.scale(menuThingImage, (30, 30))  #change size first before doing alpha things
     menuThingImage.set_colorkey((0,0,0))
     menuThingImage.convert_alpha()
+
+    
+
+    lionKingTitleImage = pygame.image.load(lionKingTitleImageName).convert()
+    lionKingTitleImage = pygame.transform.scale(lionKingTitleImage, (400, 100))  #change size first before doing alpha things
+    lionKingTitleImage.set_colorkey((0,163,127))
+    lionKingTitleImage.convert_alpha()
     
 def HandleInput(running):
 
@@ -250,7 +258,11 @@ def HandleInput(running):
 
 def DrawMainMenu():
     surface.blit(backImage, (0, 0))
+
+    surface.blit(lionKingTitleImage, (110, 50))
+
     #pygame.draw.rect(surface, COL_WHITE, pygame.Rect(145, 115, 340, 58))
+    #Write the bug toss title using the font that I loaded into alphabet
     spacing = 40
     i = 0
     for letter in title:
@@ -260,7 +272,7 @@ def DrawMainMenu():
             surface.blit(alphabet[posInArray], (140 + i*spacing, 200))
         i = i + 1   
 
-    #draw the menu things
+    #draw the menu and selection icon thingy
     surface.blit(menuThingImage, (220,menuThingYVal))
     surface.blit(startTextSurface, (260,MENU_Y_POS_1))
     surface.blit(quitTextSurface, (260,MENU_Y_POS_2))
@@ -268,7 +280,7 @@ def DrawMainMenu():
 def DrawGame():
     surface.blit(bugTossBackImage, (0, 0))
 
-    #DrawPumba
+    #Draw pumba in whatever state he is in!
     if(pumbaState == PUMBA_IDLE):
         surface.blit(pumbaIdle[pumbaIdleFrame], (pumba_X, PUMBA_Y))
     elif(pumbaState == PUMBA_EATING):
