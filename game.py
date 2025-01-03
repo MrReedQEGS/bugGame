@@ -50,6 +50,7 @@ alphabetImageName = "./images/Letters.png"
 menuThingImageName = "./images/menuThing.png"
 pumbaIdleImageName = "./images/pumbaIdle.png"
 pumbaEatingImageName = "./images/pumbaEating.png"
+pumbaRunningImageName = "./images/pumbaRunning.png"
 lionKingTitleImageName = "./images/LionKingLogo.png"
 
 #sounds
@@ -80,14 +81,16 @@ PUMBA_TIMER_DELAY = 0.15
 pumbaTimer = None
 
 pumba_X = 200
-PUMBA_Y = 305
+PUMBA_Y = 300
 pumbaSpeed = 0.1
 pumbaIdleFrame = 1
 pumbaIdleAminationDirection = 1
 PUMBA_IDLE = 1
 PUMBA_EATING = 2
-pumbaState = PUMBA_IDLE
+PUMBA_RUNNING = 3
+pumbaState = PUMBA_RUNNING
 pumbaEatingFrame = 0
+pumbaRunningFrame = 0
 
 #fonts
 pygame.font.init() # you have to call this at the start, 
@@ -127,7 +130,7 @@ def Timer1Callback():
 
 def PumbaTimerCallback():
 
-    global pumbaIdleFrame,pumbaIdleAminationDirection,pumbaEatingFrame,pumbaState
+    global pumbaIdleFrame,pumbaIdleAminationDirection,pumbaEatingFrame,pumbaState,pumbaRunningFrame
 
     if(pumbaState == PUMBA_IDLE):
 
@@ -150,10 +153,16 @@ def PumbaTimerCallback():
             pumbaState = PUMBA_IDLE
             pumbaIdleAminationDirection = 1
             pumbaIdleFrame = 1
-
+        
+    elif(pumbaState == PUMBA_RUNNING):
+        #Should play the eating animation once!
+        pumbaRunningFrame = pumbaRunningFrame + 1
+        if(pumbaRunningFrame >= 10):
+            pumbaRunningFrame = 0
+    
 def LoadImages():
     global backImage,theImage,bugTossBackImage,alphabet
-    global menuThingImage,pumbaIdle,pumbaEating,lionKingTitleImage
+    global menuThingImage,pumbaIdle,pumbaEating,lionKingTitleImage,pumbaRunning
 
     backImage = pygame.image.load(backImageName).convert()
     backImage = pygame.transform.scale(backImage, (600, 400))
@@ -172,23 +181,28 @@ def LoadImages():
     pumbaIdleSS = spritesheet(pumbaIdleImageName)
     pumbaIdle = []
     for i in range(4):
-            image = pumbaIdleSS.image_at((i*45,0,45,45),colorkey=COL_WHITE)
-            image = pygame.transform.scale(image, (90, 90))
+            image = pumbaIdleSS.image_at((i*45,0,45,50),colorkey=COL_WHITE)
+            image = pygame.transform.scale(image, (90, 100))
             pumbaIdle.append(image)
 
     pumbaEatingSS = spritesheet(pumbaEatingImageName)
     pumbaEating = []
     for i in range(4):
-            image = pumbaEatingSS.image_at((i*45,0,45,45),colorkey=COL_WHITE)
-            image = pygame.transform.scale(image, (90, 90))
+            image = pumbaEatingSS.image_at((i*45,0,45,50),colorkey=COL_WHITE)
+            image = pygame.transform.scale(image, (90, 100))
             pumbaEating.append(image)
+
+    pumbaRunningSS = spritesheet(pumbaRunningImageName)
+    pumbaRunning = []
+    for i in range(10):
+            image = pumbaRunningSS.image_at((i*75,0,75,50),colorkey=(255,0,255))
+            image = pygame.transform.scale(image, (150, 100))
+            pumbaRunning.append(image)
     
     menuThingImage = pygame.image.load(menuThingImageName).convert()
     menuThingImage = pygame.transform.scale(menuThingImage, (30, 30))  #change size first before doing alpha things
     menuThingImage.set_colorkey((0,0,0))
     menuThingImage.convert_alpha()
-
-    
 
     lionKingTitleImage = pygame.image.load(lionKingTitleImageName).convert()
     lionKingTitleImage = pygame.transform.scale(lionKingTitleImage, (400, 100))  #change size first before doing alpha things
@@ -289,6 +303,8 @@ def DrawGame():
         surface.blit(pumbaIdle[pumbaIdleFrame], (pumba_X, PUMBA_Y))
     elif(pumbaState == PUMBA_EATING):
         surface.blit(pumbaEating[pumbaEatingFrame], (pumba_X, PUMBA_Y))
+    elif(pumbaState == PUMBA_RUNNING):
+        surface.blit(pumbaRunning[pumbaRunningFrame], (pumba_X, PUMBA_Y))
     
     
 
