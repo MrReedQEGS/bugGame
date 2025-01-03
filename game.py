@@ -48,7 +48,7 @@ backImageName = "./images/mainBackground.jpg"
 bugTossbackImageName = "./images/bugTossBackground.jpg"
 alphabetImageName = "./images/Letters.png"
 menuThingImageName = "./images/menuThing.png"
-pumbaIdleImageName = "./images/pumbaIdle.png"
+pumbaIdleImageName = "./images/pumbaIdle2.png"
 pumbaEatingImageName = "./images/pumbaEating.png"
 pumbaRunningImageName = "./images/pumbaRunning.png"
 lionKingTitleImageName = "./images/LionKingLogo.png"
@@ -77,13 +77,13 @@ MENU_MAX_AMPLITUDE = 6
 DELAY1 = 0.07
 myTimer1 = None
 
-PUMBA_TIMER_DELAY = 0.1
+PUMBA_TIMER_DELAY = 0.15
 pumbaTimer = None
 
 pumba_X = 200
 PUMBA_Y = 300
 pumbaSpeed = 0.2
-pumbaIdleFrame = 1
+pumbaIdleFrame = 0
 pumbaIdleAminationDirection = 1
 PUMBA_IDLE = 1
 PUMBA_EATING = 2
@@ -146,7 +146,7 @@ def PumbaTimerCallback():
                 pumbaIdleAminationDirection = -1
         else:
             pumbaIdleFrame = pumbaIdleFrame - 1
-            if(pumbaIdleFrame == 1):
+            if(pumbaIdleFrame == 0):
                 pumbaIdleAminationDirection = 1
      
     elif(pumbaState == PUMBA_EATING):
@@ -155,7 +155,7 @@ def PumbaTimerCallback():
         if(pumbaEatingFrame > 3):
             pumbaState = PUMBA_IDLE
             pumbaIdleAminationDirection = 1
-            pumbaIdleFrame = 1
+            pumbaIdleFrame = 0
         
     elif(pumbaState == PUMBA_RUNNING):
         #Should play the eating animation once!
@@ -293,7 +293,7 @@ def HandleInput(running):
                     pumbaEatingFrame = 0
                     pumbaRunningFrame = 0
                     pumbaIdleAminationDirection = 1
-                    pumbaIdleFrame = 1
+                    pumbaIdleFrame = 0
        
                 
     return running
