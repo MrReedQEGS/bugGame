@@ -36,7 +36,7 @@ SCREEN_HEIGHT = 400
 
 COL_WHITE = (255,255,255)
 
-title = "BUG TOSS"
+title = "BUG CATCH"
 
 # create the display surface object
 # of specific dimension.
@@ -77,20 +77,23 @@ MENU_MAX_AMPLITUDE = 6
 DELAY1 = 0.07
 myTimer1 = None
 
-PUMBA_TIMER_DELAY = 0.15
+PUMBA_TIMER_DELAY = 0.1
 pumbaTimer = None
 
 pumba_X = 200
 PUMBA_Y = 300
-pumbaSpeed = 0.1
+pumbaSpeed = 0.2
 pumbaIdleFrame = 1
 pumbaIdleAminationDirection = 1
 PUMBA_IDLE = 1
 PUMBA_EATING = 2
 PUMBA_RUNNING = 3
-pumbaState = PUMBA_RUNNING
+pumbaState = PUMBA_IDLE
 pumbaEatingFrame = 0
 pumbaRunningFrame = 0
+FACING_RIGHT = 1
+FACING_LEFT = 2
+pumbaDirection = FACING_RIGHT
 
 #fonts
 pygame.font.init() # you have to call this at the start, 
@@ -162,7 +165,7 @@ def PumbaTimerCallback():
     
 def LoadImages():
     global backImage,theImage,bugTossBackImage,alphabet
-    global menuThingImage,pumbaIdle,pumbaEating,lionKingTitleImage,pumbaRunning
+    global menuThingImage,pumbaIdle,pumbaEating,lionKingTitleImage,pumbaRunningLeft,pumbaRunningRight
 
     backImage = pygame.image.load(backImageName).convert()
     backImage = pygame.transform.scale(backImage, (600, 400))
@@ -193,11 +196,15 @@ def LoadImages():
             pumbaEating.append(image)
 
     pumbaRunningSS = spritesheet(pumbaRunningImageName)
-    pumbaRunning = []
-    for i in range(10):
+    pumbaRunningRight = []
+    pumbaRunningLeft = []
+    for i in range(13):
             image = pumbaRunningSS.image_at((i*75,0,75,50),colorkey=(255,0,255))
             image = pygame.transform.scale(image, (150, 100))
-            pumbaRunning.append(image)
+            pumbaRunningRight.append(image)
+            image = pygame.transform.flip(image, True, False)
+            pumbaRunningLeft.append(image)
+
     
     menuThingImage = pygame.image.load(menuThingImageName).convert()
     menuThingImage = pygame.transform.scale(menuThingImage, (30, 30))  #change size first before doing alpha things
@@ -212,6 +219,7 @@ def LoadImages():
 def HandleInput(running):
 
     global theImage,gameState,menuPos,menuThingYVal,pumba_X,pumbaEatingFrame,pumbaState
+    global pumbaIdleFrame,pumbaDirection,pumbaRunningFrame,pumbaIdleAminationDirection
 
     if(gameState == MAIN_MENU):
 
@@ -246,14 +254,18 @@ def HandleInput(running):
 
         keys = pygame.key.get_pressed()  # Checking pressed keys
         if keys[pygame.K_RIGHT]:
+            pumbaDirection = FACING_RIGHT
+            pumbaState = PUMBA_RUNNING
             pumba_X = pumba_X + pumbaSpeed
             if(pumba_X > SCREEN_WIDTH - 90):
                 pumba_X = SCREEN_WIDTH - 90
 
         if keys[pygame.K_LEFT]:
+            pumbaDirection = FACING_LEFT
+            pumbaState = PUMBA_RUNNING
             pumba_X = pumba_X - pumbaSpeed
-            if(pumba_X < 0):
-                pumba_X = 0
+            if(pumba_X < -25):
+                pumba_X = -25
 
         for event in pygame.event.get():
 
@@ -267,9 +279,21 @@ def HandleInput(running):
                         pygame.mixer.music.stop()
                         pygame.mixer.music.load("./sounds/02 - This Land.mp3") 
                         pygame.mixer.music.play(-1,0.0)
+                if( event.key == pygame.K_RIGHT or event.key == pygame.K_LEFT):
+                    #reset running animation
+                    pumbaRunningFrame = 0
+
                 if(event.key == pygame.K_SPACE):
                     pumbaState = PUMBA_EATING
                     pumbaEatingFrame = 0
+            
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_RIGHT or event.key == pygame.K_LEFT:
+                    pumbaState = PUMBA_IDLE
+                    pumbaEatingFrame = 0
+                    pumbaRunningFrame = 0
+                    pumbaIdleAminationDirection = 1
+                    pumbaIdleFrame = 1
        
                 
     return running
@@ -287,7 +311,7 @@ def DrawMainMenu():
         asciiVal = ord(letter)
         posInArray = asciiVal-65
         if(asciiVal != 32): 
-            surface.blit(alphabet[posInArray], (140 + i*spacing, 200))
+            surface.blit(alphabet[posInArray], (115 + i*spacing, 200))
         i = i + 1   
 
     #draw the menu and selection icon thingy
@@ -304,8 +328,10 @@ def DrawGame():
     elif(pumbaState == PUMBA_EATING):
         surface.blit(pumbaEating[pumbaEatingFrame], (pumba_X, PUMBA_Y))
     elif(pumbaState == PUMBA_RUNNING):
-        surface.blit(pumbaRunning[pumbaRunningFrame], (pumba_X, PUMBA_Y))
-    
+        if(pumbaDirection == FACING_LEFT):
+            surface.blit(pumbaRunningLeft[pumbaRunningFrame], (pumba_X, PUMBA_Y))
+        else:
+            surface.blit(pumbaRunningRight[pumbaRunningFrame], (pumba_X, PUMBA_Y))
     
 
 ##############################################################################
