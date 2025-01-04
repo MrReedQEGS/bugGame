@@ -82,7 +82,8 @@ pumbaTimer = None
 
 pumba_X = 200
 PUMBA_Y = 300
-pumbaSpeed = 0.2
+PUMBA_MAX_SPEED = 100
+pumbaSpeed = 0
 pumbaIdleFrame = 0
 pumbaIdleAminationDirection = 1
 PUMBA_IDLE = 1
@@ -94,6 +95,9 @@ pumbaRunningFrame = 0
 FACING_RIGHT = 1
 FACING_LEFT = 2
 pumbaDirection = FACING_RIGHT
+
+PUMBA_TIMER_DELAY_2 = 0.015
+pumbaTimerStopRunning = None
 
 #fonts
 pygame.font.init() # you have to call this at the start, 
@@ -109,10 +113,16 @@ quitTextSurface = my_font.render("Quit", False, (255, 255, 255))
 
 def TurnOffTimers():
         
-    global myTimer1
+    global myTimer1,pumbaTimer,pumbaTimerStopRunning
     if(myTimer1!=None):
         myTimer1.Stop()
         myTimer1 = None
+    if(pumbaTimer!=None):
+        pumbaTimer.Stop()
+        pumbaTimer = None
+    if(pumbaTimerStopRunning!=None):
+        pumbaTimerStopRunning.Stop()
+        pumbaTimerStopRunning = None
 
 def Timer1Callback():
     #called every 0.1 seconds
@@ -134,6 +144,7 @@ def Timer1Callback():
 def PumbaTimerCallback():
 
     global pumbaIdleFrame,pumbaIdleAminationDirection,pumbaEatingFrame,pumbaState,pumbaRunningFrame
+    global pumba_X,pumbaSpeed
 
     if(pumbaState == PUMBA_IDLE):
 
@@ -162,7 +173,36 @@ def PumbaTimerCallback():
         pumbaRunningFrame = pumbaRunningFrame + 1
         if(pumbaRunningFrame >= 10):
             pumbaRunningFrame = 0
+
+    #move pumba - sometimes the speed is zero and he will not move
+    pumba_X = pumba_X + pumbaSpeed
+    #print(pumba_X,pumbaSpeed)
+
+    if(pumba_X > SCREEN_WIDTH - 90):
+        pumba_X = SCREEN_WIDTH - 90
+    if(pumba_X < -25):
+        pumba_X = -25
+
+
+def PumbaTimerStopRunningCallback():
+    #Used to stop the running pumba.  He should skid to a stop...pretty quickly.
+
+    global pumbaSpeed
+
+    if(pumbaState == PUMBA_IDLE):
+
+        #Slow pumba down
+        if(pumbaSpeed < 0):
+            pumbaSpeed = pumbaSpeed + 5
+        
+        if(pumbaSpeed > 0):
+           # print("here")
+            pumbaSpeed = pumbaSpeed - 5
+            #pumbaSpeed = round(pumbaSpeed,0)
     
+        if(pumbaSpeed < 5 and pumbaSpeed > - 5):
+            pumbaSpeed = 0
+
 def LoadImages():
     global backImage,theImage,bugTossBackImage,alphabet
     global menuThingImage,pumbaIdle,pumbaEating,lionKingTitleImage,pumbaRunningLeft,pumbaRunningRight
@@ -218,7 +258,7 @@ def LoadImages():
     
 def HandleInput(running):
 
-    global theImage,gameState,menuPos,menuThingYVal,pumba_X,pumbaEatingFrame,pumbaState
+    global theImage,gameState,menuPos,menuThingYVal,pumbaSpeed,pumbaEatingFrame,pumbaState
     global pumbaIdleFrame,pumbaDirection,pumbaRunningFrame,pumbaIdleAminationDirection
 
     if(gameState == MAIN_MENU):
@@ -256,16 +296,14 @@ def HandleInput(running):
         if keys[pygame.K_RIGHT]:
             pumbaDirection = FACING_RIGHT
             pumbaState = PUMBA_RUNNING
-            pumba_X = pumba_X + pumbaSpeed
-            if(pumba_X > SCREEN_WIDTH - 90):
-                pumba_X = SCREEN_WIDTH - 90
+            if(pumbaSpeed < PUMBA_MAX_SPEED):
+                pumbaSpeed = pumbaSpeed + 0.06
 
         if keys[pygame.K_LEFT]:
             pumbaDirection = FACING_LEFT
             pumbaState = PUMBA_RUNNING
-            pumba_X = pumba_X - pumbaSpeed
-            if(pumba_X < -25):
-                pumba_X = -25
+            if(pumbaSpeed > -PUMBA_MAX_SPEED):
+                pumbaSpeed = pumbaSpeed - 0.06
 
         for event in pygame.event.get():
 
@@ -348,6 +386,11 @@ if(myTimer1 == None):
 if(pumbaTimer == None):
     pumbaTimer = perpetualTimer(PUMBA_TIMER_DELAY,PumbaTimerCallback)
     pumbaTimer.start()
+
+if(pumbaTimerStopRunning == None):
+    pumbaTimerStopRunning = perpetualTimer(PUMBA_TIMER_DELAY_2,PumbaTimerStopRunningCallback)
+    pumbaTimerStopRunning.start()
+
 
 #game loop
 while running:
