@@ -78,9 +78,13 @@ menuThingYVal = MENU_Y_POS_1
 menuThingDirection = 1
 MENU_MAX_AMPLITUDE = 6
 
-DELAY1 = 45 # 15 milliseconds
+DELAY1 = 45 # 55 milliseconds
+#25 seens good for RPI 400
 
-PUMBA_TIMER_DELAY = 150  #150 milliseconds
+PUMBA_TIMER_DELAY = 25  #150 milliseconds works on gaming laptop
+PUMBA_TIMER_DELAY_2 = 12 # 15 milliseconds for laptop
+PUMBA_IDLE_DELAY = 100  # What should this be for laptop?
+TIMON_RUNNING_DELAY = 20   #20 milliseconds
 
 pumba_X = 200
 PUMBA_Y = 300
@@ -88,6 +92,7 @@ PUMBA_MAX_SPEED = 120
 pumbaSpeed = 0
 pumbaIdleFrame = 0
 pumbaIdleAminationDirection = 1
+PUMBASPEED_CHANGE = 10
 PUMBA_IDLE = 1
 PUMBA_EATING = 2
 PUMBA_RUNNING = 3
@@ -98,16 +103,11 @@ FACING_RIGHT = 1
 FACING_LEFT = 2
 pumbaDirection = FACING_RIGHT
 
-PUMBA_TIMER_DELAY_2 = 15 # 15 milliseconds
-
-
 timonSpeed = 15
 timonRunningFrame = 0
 timonDirection = FACING_RIGHT
 timon_X = 50
 TIMON_Y = 65
-
-TIMON_RUNNING_DELAY = 20   #20 milliseconds
 
 #my custom events used for timers, etc.
 USEREVENT = 1
@@ -118,6 +118,8 @@ USEREVENT = USEREVENT + 1
 PUMBASTOPRUNNINGCALLBACK = USEREVENT
 USEREVENT = USEREVENT + 1
 STARTMENUWOBBLE = USEREVENT
+USEREVENT = USEREVENT + 1
+PUMBA_IDLE_CALLBACK = USEREVENT
 USEREVENT = USEREVENT + 1
 
 #fonts
@@ -166,11 +168,10 @@ def TimonRunningCallback():
     if(timon_X >= 540 or timon_X <= -30):
         TimonSwapDirection()
 
-def PumbaTimerCallback():
+def PumbaIdleCallback():
 
     global pumbaIdleFrame,pumbaIdleAminationDirection,pumbaEatingFrame,pumbaState,pumbaRunningFrame
     global pumba_X,pumbaSpeed
-
 
     if(pumbaState == PUMBA_IDLE):
 
@@ -185,7 +186,7 @@ def PumbaTimerCallback():
             pumbaIdleFrame = pumbaIdleFrame - 1
             if(pumbaIdleFrame == 0):
                 pumbaIdleAminationDirection = 1
-     
+        
     elif(pumbaState == PUMBA_EATING):
         #Should play the eating animation once!
         pumbaEatingFrame = pumbaEatingFrame + 1
@@ -193,8 +194,14 @@ def PumbaTimerCallback():
             pumbaState = PUMBA_IDLE
             pumbaIdleAminationDirection = 1
             pumbaIdleFrame = 0
+
+def PumbaTimerCallback():
+
+    global pumbaIdleFrame,pumbaIdleAminationDirection,pumbaEatingFrame,pumbaState,pumbaRunningFrame
+    global pumba_X,pumbaSpeed
+
         
-    elif(pumbaState == PUMBA_RUNNING):
+    if(pumbaState == PUMBA_RUNNING):
         #Should play the eating animation once!
         pumbaRunningFrame = pumbaRunningFrame + 1
         if(pumbaRunningFrame >= 10):
@@ -219,14 +226,14 @@ def PumbaTimerStopRunningCallback():
 
         #Slow pumba down
         if(pumbaSpeed < 0):
-            pumbaSpeed = pumbaSpeed + 5
+            pumbaSpeed = pumbaSpeed + PUMBASPEED_CHANGE
         
         if(pumbaSpeed > 0):
            # print("here")
-            pumbaSpeed = pumbaSpeed - 5
+            pumbaSpeed = pumbaSpeed - PUMBASPEED_CHANGE
             #pumbaSpeed = round(pumbaSpeed,0)
     
-        if(pumbaSpeed < 5 and pumbaSpeed > - 5):
+        if(pumbaSpeed < PUMBASPEED_CHANGE and pumbaSpeed > - PUMBASPEED_CHANGE):
             pumbaSpeed = 0
 
 def LoadImages():
@@ -364,9 +371,9 @@ def HandleInput(running):
             PumbaTimerCallback()
         elif pygame.event.get(PUMBASTOPRUNNINGCALLBACK): # check event queue contains PLAYSOUNDEVENT 
             PumbaTimerStopRunningCallback()
-        
-        
-            
+        elif (pygame.event.get(PUMBA_IDLE_CALLBACK)):
+            PumbaIdleCallback()
+    
         for event in pygame.event.get():
 
             if event.type == pygame.QUIT:
@@ -453,7 +460,7 @@ pygame.time.set_timer(TIMONCALLBACK, TIMON_RUNNING_DELAY)
 pygame.time.set_timer(PUMBACALLBACK, PUMBA_TIMER_DELAY)
 pygame.time.set_timer(PUMBASTOPRUNNINGCALLBACK, PUMBA_TIMER_DELAY_2)
 pygame.time.set_timer(STARTMENUWOBBLE, DELAY1)
-
+pygame.time.set_timer(PUMBA_IDLE_CALLBACK, PUMBA_IDLE_DELAY)
 
 LoadImages()
 
