@@ -81,10 +81,10 @@ MENU_MAX_AMPLITUDE = 6
 DELAY1 = 45 # 55 milliseconds
 #25 seens good for RPI 400
 
-PUMBA_TIMER_DELAY = 25  #150 milliseconds works on gaming laptop
-PUMBA_TIMER_DELAY_2 = 12 # 15 milliseconds for laptop
-PUMBA_IDLE_DELAY = 100  # What should this be for laptop?
-TIMON_RUNNING_DELAY = 20   #20 milliseconds
+PUMBA_TIMER_DELAY = 150  #150 milliseconds works on gaming laptop - 25 for Rpi 400
+PUMBA_TIMER_DELAY_2 = 12 # 12 milliseconds for both laptop and rpi400
+PUMBA_IDLE_DELAY = 100  # 100 works on both laptop and rpi400
+TIMON_RUNNING_DELAY = 20   #20 milliseconds on both laptop and rpi400
 
 pumba_X = 200
 PUMBA_Y = 300
