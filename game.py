@@ -52,6 +52,7 @@ pumbaIdleImageName = "./images/pumbaIdle2.png"
 pumbaEatingImageName = "./images/pumbaEating.png"
 pumbaRunningImageName = "./images/pumbaRunning.png"
 lionKingTitleImageName = "./images/LionKingLogo.png"
+bugsImageName = "./images/bugs.png"
 
 #sounds
 pygame.mixer.init()
@@ -67,7 +68,7 @@ GAME_OVER = 3
 gameState = MAIN_MENU
 
 MENU_SPACING = 35
-MENU_Y_POS_1 = 300
+MENU_Y_POS_1 = 320
 MENU_Y_POS_2 = MENU_Y_POS_1 + 1*MENU_SPACING
 menuPos = 1
 menuThingYVal = MENU_Y_POS_1
@@ -82,7 +83,7 @@ pumbaTimer = None
 
 pumba_X = 200
 PUMBA_Y = 300
-PUMBA_MAX_SPEED = 100
+PUMBA_MAX_SPEED = 120
 pumbaSpeed = 0
 pumbaIdleFrame = 0
 pumbaIdleAminationDirection = 1
@@ -189,7 +190,7 @@ def PumbaTimerStopRunningCallback():
 
     global pumbaSpeed
 
-    if(pumbaState == PUMBA_IDLE):
+    if(pumbaState != PUMBA_RUNNING):
 
         #Slow pumba down
         if(pumbaSpeed < 0):
@@ -205,7 +206,7 @@ def PumbaTimerStopRunningCallback():
 
 def LoadImages():
     global backImage,theImage,bugTossBackImage,alphabet
-    global menuThingImage,pumbaIdle,pumbaEating,lionKingTitleImage,pumbaRunningLeft,pumbaRunningRight
+    global menuThingImage,pumbaIdle,pumbaEating,lionKingTitleImage,pumbaRunningLeft,pumbaRunningRight,bugs
 
     backImage = pygame.image.load(backImageName).convert()
     backImage = pygame.transform.scale(backImage, (600, 400))
@@ -255,6 +256,17 @@ def LoadImages():
     lionKingTitleImage = pygame.transform.scale(lionKingTitleImage, (400, 100))  #change size first before doing alpha things
     lionKingTitleImage.set_colorkey((0,163,127))
     lionKingTitleImage.convert_alpha()
+
+    #load the bugs from the bugs spritesheet
+    bugsSS = spritesheet(bugsImageName)
+    bugs = []
+    
+    for i in range(5):
+        for j in range(3):
+            image = bugsSS.image_at((i*21,j*24,21,24),colorkey=(255,255,255))
+            image = pygame.transform.scale(image, (42, 48))
+            bugs.append(image)
+           
     
 def HandleInput(running):
 
@@ -297,13 +309,13 @@ def HandleInput(running):
             pumbaDirection = FACING_RIGHT
             pumbaState = PUMBA_RUNNING
             if(pumbaSpeed < PUMBA_MAX_SPEED):
-                pumbaSpeed = pumbaSpeed + 0.06
+                pumbaSpeed = pumbaSpeed + 0.2
 
         if keys[pygame.K_LEFT]:
             pumbaDirection = FACING_LEFT
             pumbaState = PUMBA_RUNNING
             if(pumbaSpeed > -PUMBA_MAX_SPEED):
-                pumbaSpeed = pumbaSpeed - 0.06
+                pumbaSpeed = pumbaSpeed - 0.2
 
         for event in pygame.event.get():
 
@@ -339,7 +351,7 @@ def HandleInput(running):
 def DrawMainMenu():
     surface.blit(backImage, (0, 0))
 
-    surface.blit(lionKingTitleImage, (110, 50))
+    surface.blit(lionKingTitleImage, (110, 20))
 
     #pygame.draw.rect(surface, COL_WHITE, pygame.Rect(145, 115, 340, 58))
     #Write the bug toss title using the font that I loaded into alphabet
@@ -356,6 +368,12 @@ def DrawMainMenu():
     surface.blit(menuThingImage, (220,menuThingYVal))
     surface.blit(startTextSurface, (260,MENU_Y_POS_1))
     surface.blit(quitTextSurface, (260,MENU_Y_POS_2))
+
+    #draw the bugs around the title
+    for i in range(11):
+        surface.blit(bugs[i], (80 + i*40,150))
+        surface.blit(bugs[i], (80 + i*40,250))
+
 
 def DrawGame():
     surface.blit(bugTossBackImage, (0, 0))
