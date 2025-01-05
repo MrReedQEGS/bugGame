@@ -55,7 +55,7 @@ lionKingTitleImageName = "./images/LionKingLogo.png"
 bugsImageName = "./images/bugs.png"
 
 #sounds
-SOUND_ON = True
+SOUND_ON = False
 if(SOUND_ON):
     pygame.mixer.init()
     #clickSound = pygame.mixer.Sound("./sounds/click.mp3")
