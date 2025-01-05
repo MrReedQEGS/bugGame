@@ -27,7 +27,7 @@ from UsefulClasses import spritesheet,perpetualTimer
 # VARIABLES
 ##############################################################################
 
-APP_NAME = "Timon's Bug Game"
+APP_NAME = "Timon's Bug Catch"
 COPYRIGHT_MESSAGE = "Mark Reed (c) 2024"
 WINDOW_TEXT = APP_NAME + " - " + COPYRIGHT_MESSAGE
 
@@ -55,10 +55,12 @@ lionKingTitleImageName = "./images/LionKingLogo.png"
 bugsImageName = "./images/bugs.png"
 
 #sounds
-pygame.mixer.init()
-#clickSound = pygame.mixer.Sound("./sounds/click.mp3")
-pygame.mixer.music.load("./sounds/02 - This Land.mp3") 
-pygame.mixer.music.play(-1,0.0)
+SOUND_ON = False
+if(SOUND_ON):
+    pygame.mixer.init()
+    #clickSound = pygame.mixer.Sound("./sounds/click.mp3")
+    pygame.mixer.music.load("./sounds/02 - This Land.mp3") 
+    pygame.mixer.music.play(-1,0.0)
 
 running = True
 MAIN_MENU = 1
@@ -285,9 +287,10 @@ def HandleInput(running):
                 if event.key == pygame.K_RETURN and menuPos == 1:
 
                         gameState = TOSSING_BUGS
-                        pygame.mixer.music.stop()
-                        pygame.mixer.music.load("./sounds/15 - Bonus Stage 2.mp3")
-                        pygame.mixer.music.play(-1,0.0) 
+                        if(SOUND_ON):
+                            pygame.mixer.music.stop()
+                            pygame.mixer.music.load("./sounds/15 - Bonus Stage 2.mp3")
+                            pygame.mixer.music.play(-1,0.0) 
             
                 if event.key == pygame.K_RETURN and menuPos == 2 or event.key == pygame.K_ESCAPE:
                     #Time to quit!
@@ -326,9 +329,10 @@ def HandleInput(running):
            
                 if event.key == pygame.K_ESCAPE:
                         gameState = MAIN_MENU
-                        pygame.mixer.music.stop()
-                        pygame.mixer.music.load("./sounds/02 - This Land.mp3") 
-                        pygame.mixer.music.play(-1,0.0)
+                        if(SOUND_ON):
+                            pygame.mixer.music.stop()
+                            pygame.mixer.music.load("./sounds/02 - This Land.mp3") 
+                            pygame.mixer.music.play(-1,0.0)
                 if( event.key == pygame.K_RIGHT or event.key == pygame.K_LEFT):
                     #reset running animation
                     pumbaRunningFrame = 0
