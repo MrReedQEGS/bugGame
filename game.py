@@ -22,7 +22,7 @@
 
 import pygame
 from pygame.locals import *
-from UsefulClasses import spritesheet,perpetualTimer
+from UsefulClasses import spritesheet
 ##############################################################################
 # VARIABLES
 ##############################################################################
@@ -78,11 +78,9 @@ menuThingYVal = MENU_Y_POS_1
 menuThingDirection = 1
 MENU_MAX_AMPLITUDE = 6
 
-DELAY1 = 0.07
-myTimer1 = None
+DELAY1 = 45 # 15 milliseconds
 
-PUMBA_TIMER_DELAY = 0.15
-pumbaTimer = None
+PUMBA_TIMER_DELAY = 150  #150 milliseconds
 
 pumba_X = 200
 PUMBA_Y = 300
@@ -100,8 +98,27 @@ FACING_RIGHT = 1
 FACING_LEFT = 2
 pumbaDirection = FACING_RIGHT
 
-PUMBA_TIMER_DELAY_2 = 0.015
-pumbaTimerStopRunning = None
+PUMBA_TIMER_DELAY_2 = 15 # 15 milliseconds
+
+
+timonSpeed = 15
+timonRunningFrame = 0
+timonDirection = FACING_RIGHT
+timon_X = 50
+TIMON_Y = 65
+
+TIMON_RUNNING_DELAY = 20   #20 milliseconds
+
+#my custom events used for timers, etc.
+USEREVENT = 1
+TIMONCALLBACK = USEREVENT
+USEREVENT = USEREVENT + 1
+PUMBACALLBACK = USEREVENT
+USEREVENT = USEREVENT + 1
+PUMBASTOPRUNNINGCALLBACK = USEREVENT
+USEREVENT = USEREVENT + 1
+STARTMENUWOBBLE = USEREVENT
+USEREVENT = USEREVENT + 1
 
 #fonts
 pygame.font.init() # you have to call this at the start, 
@@ -115,21 +132,7 @@ quitTextSurface = my_font.render("Quit", False, (255, 255, 255))
 # SUB PROGRAMS
 ##############################################################################
 
-def TurnOffTimers():
-        
-    global myTimer1,pumbaTimer,pumbaTimerStopRunning
-    if(myTimer1!=None):
-        myTimer1.Stop()
-        myTimer1 = None
-    if(pumbaTimer!=None):
-        pumbaTimer.Stop()
-        pumbaTimer = None
-    if(pumbaTimerStopRunning!=None):
-        pumbaTimerStopRunning.Stop()
-        pumbaTimerStopRunning = None
-
 def Timer1Callback():
-    #called every 0.1 seconds
     #wobble the menu thing up and down  :)
     global menuThingDirection,menuThingYVal
     startingPos = MENU_Y_POS_1
@@ -145,10 +148,29 @@ def Timer1Callback():
         if(menuThingYVal <= startingPos - MENU_MAX_AMPLITUDE):
             menuThingDirection = 1
 
+def TimonSwapDirection():
+    global timonDirection,timonSpeed
+
+    if(timonDirection == FACING_RIGHT):
+        timonDirection = FACING_LEFT
+    else:
+        timonDirection = FACING_RIGHT
+        
+    timonSpeed = -timonSpeed
+
+def TimonRunningCallback():
+
+    global timon_X
+    timon_X = timon_X + timonSpeed
+
+    if(timon_X >= 540 or timon_X <= -30):
+        TimonSwapDirection()
+
 def PumbaTimerCallback():
 
     global pumbaIdleFrame,pumbaIdleAminationDirection,pumbaEatingFrame,pumbaState,pumbaRunningFrame
     global pumba_X,pumbaSpeed
+
 
     if(pumbaState == PUMBA_IDLE):
 
@@ -290,6 +312,9 @@ def HandleInput(running):
 
     if(gameState == MAIN_MENU):
 
+        if(pygame.event.get(STARTMENUWOBBLE)):
+            Timer1Callback()
+
         for event in pygame.event.get():
 
             if event.type == pygame.QUIT:
@@ -333,6 +358,15 @@ def HandleInput(running):
             if(pumbaSpeed > -PUMBA_MAX_SPEED):
                 pumbaSpeed = pumbaSpeed - 0.2
 
+        if pygame.event.get(TIMONCALLBACK): # check event queue contains PLAYSOUNDEVENT 
+            TimonRunningCallback()
+        elif pygame.event.get(PUMBACALLBACK): # check event queue contains PLAYSOUNDEVENT 
+            PumbaTimerCallback()
+        elif pygame.event.get(PUMBASTOPRUNNINGCALLBACK): # check event queue contains PLAYSOUNDEVENT 
+            PumbaTimerStopRunningCallback()
+        
+        
+            
         for event in pygame.event.get():
 
             if event.type == pygame.QUIT:
@@ -391,11 +425,6 @@ def DrawMainMenu():
         surface.blit(bugs[i], (80 + i*40,150))
         surface.blit(bugs[i], (80 + i*40,250))
 
-    #test draw timon
-    for i in range(8):
-        surface.blit(timonLeft[i], (i*60,300))
-
-
 def DrawGame():
     surface.blit(bugTossBackImage, (0, 0))
 
@@ -409,25 +438,24 @@ def DrawGame():
             surface.blit(pumbaRunningLeft[pumbaRunningFrame], (pumba_X, PUMBA_Y))
         else:
             surface.blit(pumbaRunningRight[pumbaRunningFrame], (pumba_X, PUMBA_Y))
+
+    if(timonDirection == FACING_RIGHT):
+        surface.blit(timonRight[timonRunningFrame], (timon_X, TIMON_Y))
+    else:
+        surface.blit(timonLeft[timonRunningFrame], (timon_X, TIMON_Y))
     
 ##############################################################################
 # MAIN
 ##############################################################################
 pygame.init()
 
+pygame.time.set_timer(TIMONCALLBACK, TIMON_RUNNING_DELAY)
+pygame.time.set_timer(PUMBACALLBACK, PUMBA_TIMER_DELAY)
+pygame.time.set_timer(PUMBASTOPRUNNINGCALLBACK, PUMBA_TIMER_DELAY_2)
+pygame.time.set_timer(STARTMENUWOBBLE, DELAY1)
+
+
 LoadImages()
-
-if(myTimer1 == None):
-    myTimer1 = perpetualTimer(DELAY1,Timer1Callback)
-    myTimer1.start()
-
-if(pumbaTimer == None):
-    pumbaTimer = perpetualTimer(PUMBA_TIMER_DELAY,PumbaTimerCallback)
-    pumbaTimer.start()
-
-if(pumbaTimerStopRunning == None):
-    pumbaTimerStopRunning = perpetualTimer(PUMBA_TIMER_DELAY_2,PumbaTimerStopRunningCallback)
-    pumbaTimerStopRunning.start()
 
 #game loop
 while running:
@@ -440,7 +468,5 @@ while running:
 
     running = HandleInput(running)
     pygame.display.flip()
-
-TurnOffTimers()
 
 pygame.quit()
