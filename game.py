@@ -53,7 +53,8 @@ pumbaEatingImageName = "./images/pumbaEating.png"
 pumbaRunningImageName = "./images/pumbaRunning.png"
 lionKingTitleImageName = "./images/LionKingLogo.png"
 bugsImageName = "./images/bugs.png"
-
+timonImageName = "./images/timon.png"
+ 
 #sounds
 SOUND_ON = False
 if(SOUND_ON):
@@ -209,6 +210,7 @@ def PumbaTimerStopRunningCallback():
 def LoadImages():
     global backImage,theImage,bugTossBackImage,alphabet
     global menuThingImage,pumbaIdle,pumbaEating,lionKingTitleImage,pumbaRunningLeft,pumbaRunningRight,bugs
+    global timonRight,timonLeft
 
     backImage = pygame.image.load(backImageName).convert()
     backImage = pygame.transform.scale(backImage, (600, 400))
@@ -268,7 +270,18 @@ def LoadImages():
             image = bugsSS.image_at((i*21,j*24,21,24),colorkey=(255,255,255))
             image = pygame.transform.scale(image, (42, 48))
             bugs.append(image)
-           
+
+     #load the timon spritesheet
+    timonSS = spritesheet(timonImageName)
+    timonRight = []
+    timonLeft = []
+    
+    for i in range(8):
+            image = timonSS.image_at((i*60,0,60,38),colorkey=(255,255,255))
+            image = pygame.transform.scale(image, (120, 76))
+            timonRight.append(image)
+            image = pygame.transform.flip(image, True, False)
+            timonLeft.append(image)       
     
 def HandleInput(running):
 
@@ -378,6 +391,10 @@ def DrawMainMenu():
         surface.blit(bugs[i], (80 + i*40,150))
         surface.blit(bugs[i], (80 + i*40,250))
 
+    #test draw timon
+    for i in range(8):
+        surface.blit(timonLeft[i], (i*60,300))
+
 
 def DrawGame():
     surface.blit(bugTossBackImage, (0, 0))
@@ -393,7 +410,6 @@ def DrawGame():
         else:
             surface.blit(pumbaRunningRight[pumbaRunningFrame], (pumba_X, PUMBA_Y))
     
-
 ##############################################################################
 # MAIN
 ##############################################################################
@@ -412,7 +428,6 @@ if(pumbaTimer == None):
 if(pumbaTimerStopRunning == None):
     pumbaTimerStopRunning = perpetualTimer(PUMBA_TIMER_DELAY_2,PumbaTimerStopRunningCallback)
     pumbaTimerStopRunning.start()
-
 
 #game loop
 while running:
