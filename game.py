@@ -57,6 +57,21 @@ timonImageName = "./images/timon.png"
  
 #sounds
 SOUND_ON = False
+
+GAMING_LAPTOP = 1
+RPI_400 = 2
+
+runningOn = GAMING_LAPTOP
+
+PUMBA_TIMER_DELAY = 18  #150 milliseconds works on gaming laptop - 18 for Rpi 400
+PUMBA_TIMER_DELAY_2 = 12 # 12 milliseconds for both laptop and rpi400
+PUMBA_IDLE_DELAY = 100  # 100 works on both laptop and rpi400
+TIMON_RUNNING_DELAY = 20   #20 milliseconds on both laptop and rpi400
+
+if(runningOn == GAMING_LAPTOP):
+    PUMBA_TIMER_DELAY = 150  #150 milliseconds works on gaming laptop - 25 for Rpi 400
+    SOUND_ON = True
+
 if(SOUND_ON):
     pygame.mixer.init()
     #clickSound = pygame.mixer.Sound("./sounds/click.mp3")
@@ -80,18 +95,7 @@ MENU_MAX_AMPLITUDE = 6
 
 DELAY1 = 45
 
-GAMING_LAPTOP = 1
-RPI_400 = 2
 
-runningOn = GAMING_LAPTOP
-
-PUMBA_TIMER_DELAY = 18  #150 milliseconds works on gaming laptop - 18 for Rpi 400
-PUMBA_TIMER_DELAY_2 = 12 # 12 milliseconds for both laptop and rpi400
-PUMBA_IDLE_DELAY = 100  # 100 works on both laptop and rpi400
-TIMON_RUNNING_DELAY = 20   #20 milliseconds on both laptop and rpi400
-
-if(runningOn == GAMING_LAPTOP):
-    PUMBA_TIMER_DELAY = 150  #150 milliseconds works on gaming laptop - 25 for Rpi 400
 
 pumba_X = 200
 PUMBA_Y = 300
