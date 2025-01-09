@@ -61,7 +61,7 @@ SOUND_ON = False
 GAMING_LAPTOP = 1
 RPI_400 = 2
 
-runningOn = GAMING_LAPTOP
+runningOn = RPI_400
 
 PUMBA_TIMER_DELAY = 18  #150 milliseconds works on gaming laptop - 18 for Rpi 400
 PUMBA_TIMER_DELAY_2 = 12 # 12 milliseconds for both laptop and rpi400
