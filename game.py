@@ -20,7 +20,7 @@
 #
 ##############################################################################
 
-import pygame
+import pygame, random
 from pygame.locals import *
 from UsefulClasses import spritesheet
 ##############################################################################
@@ -81,7 +81,7 @@ MENU_MAX_AMPLITUDE = 6
 DELAY1 = 45 # 55 milliseconds
 #25 seens good for RPI 400
 
-PUMBA_TIMER_DELAY = 25  #150 milliseconds works on gaming laptop - 25 for Rpi 400
+PUMBA_TIMER_DELAY = 18  #150 milliseconds works on gaming laptop - 18 for Rpi 400
 PUMBA_TIMER_DELAY_2 = 12 # 12 milliseconds for both laptop and rpi400
 PUMBA_IDLE_DELAY = 100  # 100 works on both laptop and rpi400
 TIMON_RUNNING_DELAY = 20   #20 milliseconds on both laptop and rpi400
@@ -103,7 +103,7 @@ FACING_RIGHT = 1
 FACING_LEFT = 2
 pumbaDirection = FACING_RIGHT
 
-timonSpeed = 15
+timonSpeed = 10
 timonRunningFrame = 0
 timonDirection = FACING_RIGHT
 timon_X = 50
@@ -162,11 +162,15 @@ def TimonSwapDirection():
 
 def TimonRunningCallback():
 
-    global timon_X
+    global timon_X,timonRunningFrame
     timon_X = timon_X + timonSpeed
 
     if(timon_X >= 540 or timon_X <= -30):
         TimonSwapDirection()
+    
+    timonRunningFrame = timonRunningFrame + 1
+    if(timonRunningFrame == 8):
+        timonRunningFrame = 0
 
 def PumbaIdleCallback():
 
@@ -239,7 +243,7 @@ def PumbaTimerStopRunningCallback():
 def LoadImages():
     global backImage,theImage,bugTossBackImage,alphabet
     global menuThingImage,pumbaIdle,pumbaEating,lionKingTitleImage,pumbaRunningLeft,pumbaRunningRight,bugs
-    global timonRight,timonLeft
+    global timonRight,timonLeft,smallBugs
 
     backImage = pygame.image.load(backImageName).convert()
     backImage = pygame.transform.scale(backImage, (600, 400))
@@ -293,10 +297,13 @@ def LoadImages():
     #load the bugs from the bugs spritesheet
     bugsSS = spritesheet(bugsImageName)
     bugs = []
-    
+    smallBugs = []
+
     for i in range(5):
         for j in range(3):
             image = bugsSS.image_at((i*21,j*24,21,24),colorkey=(255,255,255))
+            smallBugImage = pygame.transform.scale(image, (28, 32)) 
+            smallBugs.append(smallBugImage)
             image = pygame.transform.scale(image, (42, 48))
             bugs.append(image)
 
@@ -306,16 +313,16 @@ def LoadImages():
     timonLeft = []
     
     for i in range(8):
-            image = timonSS.image_at((i*60,0,60,38),colorkey=(255,255,255))
-            image = pygame.transform.scale(image, (120, 76))
-            timonRight.append(image)
-            image = pygame.transform.flip(image, True, False)
-            timonLeft.append(image)       
+        image = timonSS.image_at((i*60,0,60,38),colorkey=(255,255,255))
+        image = pygame.transform.scale(image, (120, 76))
+        timonRight.append(image)
+        image = pygame.transform.flip(image, True, False)
+        timonLeft.append(image)       
     
 def HandleInput(running):
 
     global theImage,gameState,menuPos,menuThingYVal,pumbaSpeed,pumbaEatingFrame,pumbaState
-    global pumbaIdleFrame,pumbaDirection,pumbaRunningFrame,pumbaIdleAminationDirection
+    global pumbaIdleFrame,pumbaDirection,pumbaRunningFrame,pumbaIdleAminationDirection,bugAboutToDrop
 
     if(gameState == MAIN_MENU):
 
@@ -394,6 +401,7 @@ def HandleInput(running):
                 if(event.key == pygame.K_SPACE):
                     pumbaState = PUMBA_EATING
                     pumbaEatingFrame = 0
+                    bugAboutToDrop = GetRandomBug()
             
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_RIGHT or event.key == pygame.K_LEFT:
@@ -451,6 +459,16 @@ def DrawGame():
     else:
         surface.blit(timonLeft[timonRunningFrame], (timon_X, TIMON_Y))
     
+    #draw a random bug on timon
+    if(timonDirection == FACING_RIGHT):
+        surface.blit(bugAboutToDrop, (timon_X + 85, TIMON_Y-10))
+    else:
+        surface.blit(bugAboutToDrop, (timon_X, TIMON_Y-10))
+
+def GetRandomBug():
+    someBugImage = random.choice(smallBugs)
+    return someBugImage
+    
 ##############################################################################
 # MAIN
 ##############################################################################
@@ -463,6 +481,8 @@ pygame.time.set_timer(STARTMENUWOBBLE, DELAY1)
 pygame.time.set_timer(PUMBA_IDLE_CALLBACK, PUMBA_IDLE_DELAY)
 
 LoadImages()
+
+bugAboutToDrop = GetRandomBug()
 
 #game loop
 while running:
